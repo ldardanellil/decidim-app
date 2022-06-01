@@ -1,96 +1,137 @@
-# met-decidim-web
+# Decidim app by OSP
 
-Plateforme numérique pour la participation des citoyens, Decidim (relocalisation en interne).
+Citizen Participation and Open Government application.
 
-https://participation.bordeaux.fr/
+## Deploy with Terraform
 
-https://budgetparticipatif.bordeaux-metropole.fr/
+Terraform is an open-source infrastructure as code software tool that provides an easy deployment of your infrastructure for installing Decidim.
 
-## Getting started
+Many providers are available (**AWS**, **Heroku**, **DigitalOcean**...). Check the [Terraform registry to see how to use Terraform with your provider](https://registry.terraform.io/browse/providers)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Each Terraform deployment are stored in the **deploy** folder and sorted by providers
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Feel free to add new deployments!
 
-## Add your files
+## Availables deployments 
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+- [Scaleway](https://github.com/OpenSourcePolitics/decidim-app/tree/develop/deploy/providers/scaleway)
+- [DigitalOcean](https://github.com/OpenSourcePolitics/decidim-app/tree/develop/deploy/providers/digitalocean/)
 
+## Environment variables
+
+Each provider will need a way to authenticate at their API. Make sure to set environment variables asked in the provider's documentation before using deployments.
+
+- To use Scaleway's provider
+
+```bash
+export SCW_ACCESS_KEY=<your_access_key>
+export SCW_TOKEN=<your_scw_token>
+export SCW_DEFAULT_PROJECT_ID=<id_of_your_project/organization>
 ```
-cd existing_repo
-git remote add origin https://git.scnbdx.fr/sid/apps/ruby/met-decidim-web.git
-git branch -M master
-git push -uf origin master
+
+- To use DigitalOcean's provider
+```bash
+export DIGITALOCEAN_TOKEN=<your_do_token>
+export SPACES_ACCESS_KEY_ID=<your_do_space_access_key>
+export SPACES_SECRET_ACCESS_KEY=<your_do_space_secret_key>
 ```
 
-## Integrate with your tools
+## How to deploy with Terraform?
 
-- [ ] [Set up project integrations](https://git.scnbdx.fr/sid/apps/ruby/met-decidim-web/-/settings/integrations)
+Check the list of make commands in the Makefile. Each command corresponds to a provider and a specific need.
 
-## Collaborate with your team
+- To deploy a new infrastructure with Scaleway
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```make
+make deploy-scw
+```
 
-## Test and Deploy
+## Setting up the application
 
-Use the built-in continuous integration in GitLab.
+You will need to do some steps before having the app working properly once you've deployed it:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+1. Open a Rails console in the server: `bundle exec rails console`
+2. Create a System Admin user:
+```ruby
+email = <your email>
+password = <a secure password>
+user = Decidim::System::Admin.new(email: email, password: password, password_confirmation: password)
+user.save!
+```
+3. Visit `<your app url>/system` and login with your system admin credentials
+4. Create a new organization. Check the locales you want to use for that organization, and select a default locale.
+5. Set the correct default host for the organization, otherwise the app will not work properly. Note that you need to include any subdomain you might be using.
+6. Fill the rest of the form and submit it.
 
-***
+You're good to go!
 
-# Editing this README
+## Running tests
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+This application has a functional testing suite. You can easily run locally the tests as following :
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Create test environment database 
 
-## Name
-Choose a self-explaining name for your project.
+`bundle exec rake test:setup`
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+And then run tests using `rspec`
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+`bundle exec rspec spec/`
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## Docker
+### How to use it? 
+You can boot a Decidim environment in Docker using the Makefile taht will run docker-compose commands and the last built image from the Dockerfile.
+Three context are available : 
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- **Clean Decidim**
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+An environment running the current Decidim version (from Gemfile) without any data.
+```make
+make start-clean-decidim
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- **Seeded Decidim**
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+An environment running the current Decidim version (from Gemfile) with generated seeds
+```make
+make start-seeded-decidim
+```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+- **Dumped Decidim**
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+An environment running the current Decidim version (from Gemfile) with real data dumped from an existing platform to simulate a Decidim bump version before doing in the real production environment.
+```make
+make start-dumped-decidim
+```
+***Warning : you need to get a psql dump on your local machine to restore it in your containerized database***
+***Warning2 : you need to set organization host to 0.0.0.0 with the rails console***
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+### How to stop and remove it? 
 
-## License
-For open source projects, say how it is licensed.
+To get rid off your Docker environmnent : 
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- Shut down Docker environmnent
+```make
+make stop
+```
+
+- Delete resources
+```make
+make delete
+```
+### Troubleshooting
+
+Make commands are available to help you troubleshoot your Docker environment
+
+- Start Rails console
+ ```make
+make rails-console
+```
+- Start bash session to app container
+```make
+make connect-app
+```
+
+## Database architecture (ERD)
+
+![Architecture_decidim](https://user-images.githubusercontent.com/52420208/133789299-9458fc42-a5e7-4e3d-a934-b55c6afbc8aa.jpg)
