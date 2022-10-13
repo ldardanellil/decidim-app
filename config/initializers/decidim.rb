@@ -6,12 +6,18 @@ Decidim.configure do |config|
 
   # Change these lines to set your preferred locales
   config.default_locale = :en
-  config.available_locales = [:en, :fr]
 
   # Timeout session
   config.expire_session_after = ENV.fetch("DECIDIM_SESSION_TIMEOUT", 180).to_i.minutes
 
   config.maximum_attachment_height_or_width = 6000
+
+  # Rack Attack configs
+  # Max requests in a time period to prevent DoS attacks. Only applied on production.
+  config.throttling_max_requests = Rails.application.secrets.decidim[:throttling_max_requests].to_i
+
+  # Time window in which the throttling is applied.
+  config.throttling_period = Rails.application.secrets.decidim[:throttling_period].to_i.minutes
 
   # Geocoder configuration
   config.maps = {
@@ -98,5 +104,33 @@ Decidim.configure do |config|
   config.base_uploads_path = "#{ENV["HEROKU_APP_NAME"]}/" if ENV["HEROKU_APP_NAME"].present?
 end
 
+Decidim.module_eval do
+  autoload :ReminderRegistry, "decidim/reminder_registry"
+  autoload :ReminderManifest, "decidim/reminder_manifest"
+  autoload :ManifestMessages, "decidim/manifest_messages"
+
+  def self.reminders_registry
+    @reminders_registry ||= Decidim::ReminderRegistry.new
+  end
+end
+
+Decidim.reminders_registry.register(:orders) do |reminder_registry|
+  reminder_registry.generator_class_name = "Decidim::Budgets::OrderReminderGenerator"
+  reminder_registry.form_class_name = "Decidim::Budgets::Admin::OrderReminderForm"
+  reminder_registry.command_class_name = "Decidim::Budgets::Admin::CreateOrderReminders"
+
+  reminder_registry.settings do |settings|
+    settings.attribute :reminder_times, type: :array, default: [2.hours, 1.week, 2.weeks]
+  end
+
+  reminder_registry.messages do |msg|
+    msg.set(:title) { |count: 0| I18n.t("decidim.budgets.admin.reminders.orders.title", count: count) }
+    msg.set(:description) { I18n.t("decidim.budgets.admin.reminders.orders.description") }
+  end
+end
+
 Rails.application.config.i18n.available_locales = Decidim.available_locales
 Rails.application.config.i18n.default_locale = Decidim.default_locale
+
+# Inform Decidim about the assets folder
+Decidim.register_assets_path File.expand_path("app/packs", Rails.application.root)

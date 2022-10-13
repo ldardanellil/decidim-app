@@ -16,6 +16,14 @@ fr:
         create:
           error: Erreur
           success: Succès
+      reminders:
+        create:
+          error: Il y a eu un problème en créant le rappel.
+          success:
+            one: "%{count} utilisateur recevra le rappel"
+            other: "%{count} utilisateurs recevront le rappel"
+        new:
+          submit: Send
     amendments:
       emendation:
         announcement:
@@ -32,6 +40,23 @@ fr:
         name: Formulaire de vérification d'identité
       osp_authorization_workflow:
         name: Procédure d'autorisation
+    budgets:
+      admin:
+        reminders:
+          orders:
+            description: Les utilisateurs vont recevoir un mail avec les liens des budgets pour lesquels ils ont un vote en cours.
+            title:
+              one: Vous êtes sur le point d'envoyer un mail de rappel à %{count} utilisateur.
+              other: Vous êtes sur le point d'envoyer un mail de rappel à %{count} utilisateurs.
+      vote_reminder_mailer:
+        vote_reminder:
+          email_budgets: 'Budget où vous avez un vote non terminé:'
+          email_intro: Vous avez commencé un vote de budget participatif, mais vous ne l'avez pas terminé.
+          email_link: Terminer mon vote
+          email_outro: Pensez à terminer votre vote. Pour voter, vous devez d'abord séléctionner le ou les projets pour lesquels vous voulez voter, puis confirmer votre vote avec le bouton "Voter".
+          email_subject:
+            one: Vous n'avez pas finalisé votre vote
+            other: Vous n'avez pas finalisé vos votes
     events:
       budgets:
         pending_order:
@@ -65,6 +90,11 @@ fr:
         update:
           invalid: Il y a eu une erreur lors de la mise à jour de la rencontre.
           success: La rencontre a été mise à jour avec succès.
+    omniauth:
+      france_connect:
+        external:
+          link: https://franceconnect.gouv.fr/
+          text: Qu'est-ce-que FranceConnect ?
     proposals:
       create:
         error: Il y a eu des erreurs lors de la sauvegarde de la proposition.
@@ -100,6 +130,7 @@ fr:
           france_connect:
             client_id: Client ID
             client_secret: Client secret
+            scope: scope
             site_url: Site URL
           france_connect_profile:
             button_path: Chemin du bouton
@@ -114,9 +145,9 @@ fr:
             provider_name: Provider name
             site: Site URL
           publik:
-            client_id: ID client
-            client_secret: Secret client
-            site_url: URL site
+            client_id: Client ID
+            client_secret: Client secret
+            site_url: Site URL
     verifications:
       authorizations:
         create:
