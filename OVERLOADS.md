@@ -29,7 +29,7 @@
 ## Add FC Connect SSO
  - **app/views/decidim/devise/shared/_omniauth_buttons.html.erb**
 ```ruby
-<% if provider.match?("france") %>
+    <% if provider.match?("france") %>
 ```
 
 * `app/views/decidim/scopes/picker.html.erb`
@@ -46,6 +46,12 @@ de6d804 - fix multipart object tagging (#40) (#41), 2021-12-24
 
 * `lib/tasks/restore_dump.rake`
 705e0ad - Run rubocop, 2021-12-01
+
+## Fix collaborative draft
+* `app/controllers/decidim/proposals/collaborative_drafts_controller.rb`
+* `app/views/decidim/proposals/collaborative_drafts/_wizard_aside.html.erb`
+* `app/views/v0.26/decidim/proposals/collaborative_drafts/_show.html.erb`
+* `spec/system/collaborative_drafts_fields_spec.rb`
 
 ## Add budget reminder(#170)
 * `app/commands/decidim/budgets/admin/create_order_reminders.rb`

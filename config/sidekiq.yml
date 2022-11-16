@@ -1,20 +1,23 @@
 :concurrency: 5
 :queues:
+  - mailers
   - default
   - backups
-  - metrics
-  - mailers
-  - newsletter
   - events
+  - newsletter
+  - exports
   - user_report
   - block_user
+  - translation
   - scheduled
-  - exports
   - translations
+  - metrics
+  - vote_reminder
+  - reminders
 
 :schedule:
   CalculateAllMetrics:
-    cron: '0 0 0 * * *' # Run at midnight
+    cron: '0 9 0 * * *' # Run at 00:09
     class: CalculateAllMetricsJob
     queue: scheduled
   PreloadOpenData:
