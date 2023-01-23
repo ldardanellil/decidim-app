@@ -32,6 +32,7 @@ gem "puma", ">= 5.5.1"
 gem "faker", "~> 2.14"
 
 gem "activejob-uniqueness", require: "active_job/uniqueness/sidekiq_patch"
+gem "aws-sdk-s3", require: false
 gem "fog-aws"
 gem "sys-filesystem"
 
@@ -42,6 +43,7 @@ group :development, :test do
 
   gem "brakeman", "~> 5.1"
   gem "decidim-dev", git: "https://github.com/decidim/decidim.git", branch: DECIDIM_VERSION
+  gem "parallel_tests"
 end
 
 group :development do
@@ -66,3 +68,5 @@ group :production do
   gem "sidekiq-scheduler"
 end
 gem "nokogiri", "1.13.4"
+
+gem "rack-attack", "~> 6.6"
