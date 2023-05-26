@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_10_26_132640) do
+ActiveRecord::Schema.define(version: 2023_04_06_122933) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "ltree"
@@ -1198,8 +1198,11 @@ ActiveRecord::Schema.define(version: 2022_10_26_132640) do
     t.string "machine_translation_display_priority", default: "original", null: false
     t.string "external_domain_whitelist", default: [], array: true
     t.boolean "enable_participatory_space_filters", default: true
-    t.jsonb "assistant"
-    t.boolean "enable_ludens", default: false
+    t.boolean "delete_admin_logs", default: false, null: false
+    t.integer "delete_admin_logs_after"
+    t.boolean "delete_inactive_users", default: false, null: false
+    t.integer "delete_inactive_users_email_after"
+    t.integer "delete_inactive_users_after"
     t.index ["host"], name: "index_decidim_organizations_on_host", unique: true
     t.index ["name"], name: "index_decidim_organizations_on_name", unique: true
   end
@@ -1210,18 +1213,6 @@ ActiveRecord::Schema.define(version: 2022_10_26_132640) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["decidim_component_id"], name: "index_decidim_pages_pages_on_decidim_component_id"
-  end
-
-  create_table "decidim_participative_actions", force: :cascade do |t|
-    t.boolean "completed"
-    t.integer "points"
-    t.string "resource"
-    t.string "action"
-    t.string "category"
-    t.string "recommendation"
-    t.bigint "decidim_organization_id", null: false
-    t.string "documentation"
-    t.index ["decidim_organization_id"], name: "index_decidim_participative_actions_on_decidim_organization_id"
   end
 
   create_table "decidim_participatory_process_groups", id: :serial, force: :cascade do |t|
@@ -1782,6 +1773,7 @@ ActiveRecord::Schema.define(version: 2022_10_26_132640) do
     t.integer "block_id"
     t.boolean "email_on_moderations", default: true
     t.integer "follows_count", default: 0, null: false
+    t.boolean "enable_ludens"
     t.index ["confirmation_token"], name: "index_decidim_users_on_confirmation_token", unique: true
     t.index ["decidim_organization_id"], name: "index_decidim_users_on_decidim_organization_id"
     t.index ["email", "decidim_organization_id"], name: "index_decidim_users_on_email_and_decidim_organization_id", unique: true, where: "((deleted_at IS NULL) AND (managed = false) AND ((type)::text = 'Decidim::User'::text))"
@@ -1864,6 +1856,12 @@ ActiveRecord::Schema.define(version: 2022_10_26_132640) do
     t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
   end
 
+  create_table "participative_actions_completed", force: :cascade do |t|
+    t.string "decidim_participative_action", null: false
+    t.bigint "decidim_user_id", null: false
+    t.index ["decidim_user_id"], name: "index_participative_actions_completed_on_decidim_user_id"
+  end
+
   create_table "request_environment_rules", id: :serial, force: :cascade do |t|
     t.integer "redirect_rule_id", null: false
     t.string "environment_key_name", null: false
@@ -1908,7 +1906,6 @@ ActiveRecord::Schema.define(version: 2022_10_26_132640) do
   add_foreign_key "decidim_editor_images", "decidim_users", column: "decidim_author_id"
   add_foreign_key "decidim_identities", "decidim_organizations"
   add_foreign_key "decidim_newsletters", "decidim_users", column: "author_id"
-  add_foreign_key "decidim_participative_actions", "decidim_organizations"
   add_foreign_key "decidim_participatory_process_steps", "decidim_participatory_processes"
   add_foreign_key "decidim_participatory_processes", "decidim_organizations"
   add_foreign_key "decidim_participatory_processes", "decidim_scope_types"
@@ -1938,4 +1935,5 @@ ActiveRecord::Schema.define(version: 2022_10_26_132640) do
   add_foreign_key "oauth_access_tokens", "decidim_users", column: "resource_owner_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_applications", "decidim_organizations"
+  add_foreign_key "participative_actions_completed", "decidim_users"
 end

@@ -86,6 +86,21 @@ module Decidim
             expect(response.body).to include("Error uploading image")
           end
         end
+
+        context "when development mode" do
+          before do
+            allow(Rails.env).to receive(:development?).and_return(true)
+          end
+
+          it "returns full image url" do
+            expect do
+              post :create, params: valid_params
+            end.to change { Decidim::EditorImage.count }.by(1)
+
+            active_storage_path = Decidim::EditorImage.first.attached_uploader(:file).path
+            expect(response.body).to eq({ url: "http://test.host#{active_storage_path}", message: "Image uploaded successfully" }.to_json)
+          end
+        end
       end
     end
   end

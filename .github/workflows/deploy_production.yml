@@ -1,5 +1,5 @@
 name: "Deploy production"
-on: [workflow_dispatch]
+on: [ workflow_dispatch ]
 
 env:
   CI: "true"
