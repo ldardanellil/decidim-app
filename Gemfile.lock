@@ -57,6 +57,15 @@ GIT
       omniauth-oauth2 (>= 1.7.2, < 2.0)
 
 GIT
+  remote: https://github.com/PopulateTools/decidim-module-anonymous_proposals
+  revision: 223a00b29901224b5c23304483b05afc2c0e8d14
+  branch: release/0.27-stable
+  specs:
+    decidim-anonymous_proposals (0.27.0)
+      decidim-core (>= 0.27.0)
+      deface (~> 1.5)
+
+GIT
   remote: https://github.com/PopulateTools/decidim-module-extra_user_fields.git
   revision: 0fee03bf94dce989d36153cfa2b973c388172fc3
   branch: extra-fields-0-27
@@ -1070,6 +1079,7 @@ DEPENDENCIES
   climate_control (~> 1.2)
   dalli
   decidim (~> 0.27.0)
+  decidim-anonymous_proposals!
   decidim-cache_cleaner
   decidim-conferences (~> 0.27.0)
   decidim-decidim_awesome
