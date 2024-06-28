@@ -223,4 +223,8 @@ namespace :import do
 
     Rails.logger.close
   end
+
+  task pps: :environment do
+    DrupalJob.perform_now
+  end
 end
