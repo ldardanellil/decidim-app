@@ -3,7 +3,7 @@
 class DrupalJob < ApplicationJob
   queue_as :exports
 
-  def perform
-    Decidim::DrupalImporterService.run
+  def perform(*args)
+    Decidim::DrupalImporterService.run(*args)
   end
 end

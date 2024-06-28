@@ -225,6 +225,7 @@ namespace :import do
   end
 
   task pps: :environment do
-    DrupalJob.perform_now
+    organization = Decidim::Organization.first
+    DrupalJob.perform_now(organization: organization)
   end
 end
