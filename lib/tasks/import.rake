@@ -226,6 +226,7 @@ namespace :import do
 
   task pps: :environment do
     organization = Decidim::Organization.first
-    DrupalJob.perform_now(organization: organization)
+    path = ENV["CSV_FILE"].presence || "tmp/links.csv"
+    DrupalJob.perform_now(organization: organization, path: path)
   end
 end

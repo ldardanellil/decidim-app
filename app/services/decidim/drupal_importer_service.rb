@@ -13,13 +13,17 @@ module Decidim
 
     def execute
       puts "executing..."
-      urls = [
-        { url: "https://participation.bordeaux-metropole.fr/participation/urbanisme/martignas-sur-jalle-creer-un-centre-ville-encore-plus-accueillant-et-facile", slug: "martignas-sur-jalle-creer-un-centre-ville-encore-plus-accueillant-et-facile" },
-        { url: "https://participation.bordeaux-metropole.fr/participation/plan-climat-air-energie-territorial-pcaet-consultation", slug: "plan-climat-air-energie-territorial-pcaet-consultation" },
-      ]
+      rows = CSV.read(@path, headers: true)
 
-      urls.each do |url|
-        drupal_page = DrupalPage.scrape(url: url[:url], slug: url[:slug])
+      if rows.blank?
+        puts "No rows found"
+        return
+      end
+
+      rows.each do |row|
+        drupal_page = DrupalPage.scrape(url: row["url"])
+        raise if drupal_page.errors.present?
+
         pp = Decidim::ParticipatoryProcess.find_by(slug: "projet-#{drupal_page.drupal_node_id}")
         if pp.blank?
           pp = Decidim::ParticipatoryProcess.create!(
@@ -33,7 +37,7 @@ module Decidim
             participatory_structure: { "fr" => drupal_page.drupal_type },
             target: { "fr" => "Gestionnaire de la participation : #{drupal_page.drupal_author}" },
             meta_scope: { "fr" => "" },
-            developer_group: { "fr" => drupal_page.drupal_organization.presence || "Bordeaux métropole" },
+            developer_group: { "fr" => drupal_page.drupal_organization.presence || "Bordeaux Métropole" },
             start_date: Time.zone.now,
             end_date: Time.zone.now + 1.minute)
         end
@@ -114,10 +118,12 @@ module Decidim
         sleep 2
 
       rescue StandardError => e
-        puts "Error: #{e.message}"
         drupal_page.add_error(
           message: e.message
         )
+
+        drupal_page.save_json_resume!
+        drupal_page.save_csv_resume!
         next
       end
       puts "terminated"
@@ -168,17 +174,6 @@ module Decidim
           "organization" => org
         }
       )
-    end
-
-    def transform_file_name(filename)
-      filename = filename.gsub("_", " ")
-      filename = filename.gsub("'", "")
-      filename = filename.gsub("\"", "")
-      filename = filename.gsub("(", "")
-      filename = filename.gsub(")", "")
-
-      filename = filename.split.map(&:capitalize).join(' ')
-      return filename
     end
   end
 
@@ -246,6 +241,10 @@ module Decidim
       set_drupal_author
       save!
 
+      self
+    rescue StandardError => e
+      add_error(message: e.message)
+      save!
       self
     end
 
@@ -343,12 +342,12 @@ module Decidim
     end
 
     def add_error(hash)
-      puts "Appending error: #{hash}"
+      return if hash.blank? || hash[:message].blank?
+
       @errors << hash
     end
 
     def save_json_resume!
-      return if @title.blank? || @description.blank?
       Dir.mkdir("tmp/drupal_import/#{@md5}") unless File.exists?("tmp/drupal_import/#{@md5}")
       File.write("tmp/drupal_import/#{@md5}/#{@md5}.json", JSON.pretty_generate(attributes))
     end
