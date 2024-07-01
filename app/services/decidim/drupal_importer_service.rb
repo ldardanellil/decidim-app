@@ -97,7 +97,7 @@ module Decidim
             puts "Error: '#{e.message}'"
           end
 
-          drupal_page.add_error(
+          drupal_page&.add_error(
             message: e.message,
             name: attachment[:name],
             filename: attachment[:filename],
@@ -113,17 +113,17 @@ module Decidim
         drupal_page.set_decidim_meeting_id(meeting.id)
         drupal_page.set_decidim_page_id(page.id)
         drupal_page.set_decidim_proposal_id(proposal.id)
-        drupal_page.save_json_resume!
-        drupal_page.save_csv_resume!
+        drupal_page&.save_json_resume!
+        drupal_page&.save_csv_resume!
         sleep 2
 
       rescue StandardError => e
-        drupal_page.add_error(
+        drupal_page&.add_error(
           message: e.message
         )
 
-        drupal_page.save_json_resume!
-        drupal_page.save_csv_resume!
+        drupal_page&.save_json_resume!
+        drupal_page&.save_csv_resume!
         next
       end
       puts "terminated"
@@ -132,6 +132,9 @@ module Decidim
     private
 
     def create_meeting!(org, pp)
+      component = Decidim::Component.find_by(name: "RENCONTRES 📍", manifest_name: "meetings", participatory_space: pp)
+      return if component.present?
+
       Decidim::Component.create!(
         name: "RENCONTRES 📍",
         manifest_name: "meetings",
@@ -147,6 +150,9 @@ module Decidim
     end
 
     def create_page!(org, pp)
+      component = Decidim::Component.find_by(name: "BILANS & DÉCISIONS", manifest_name: "pages", participatory_space: pp)
+      return if component.present?
+
       Decidim::Component.create!(
         name: "BILANS & DÉCISIONS",
         manifest_name: "pages",
@@ -162,6 +168,9 @@ module Decidim
     end
 
     def create_proposal!(org, pp)
+      component = Decidim::Component.find_by(name: "AVIS ET REACTIONS 💡", manifest_name: "proposals", participatory_space: pp)
+      return if component.present?
+
       Decidim::Component.create!(
         name: "AVIS ET REACTIONS 💡",
         manifest_name: "proposals",
