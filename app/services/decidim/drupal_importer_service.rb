@@ -29,26 +29,26 @@ module Decidim
             short_description: { "fr" => drupal_page.short_description },
             description: { "fr" => drupal_page.description },
             organization: @organization,
-            participatory_scope: { "fr" => "Réglementée / Concertation simplifiée" },
-            participatory_structure: { "fr" => "Déplacements" },
-            target: { "fr" => "Gestionnaire de la participation : Mikael Mora" },
-            meta_scope: { "fr" => "Martignas , Mérignac" },
-            developer_group: { "fr" => "Bordeaux Métropole" },
+            participatory_scope: { "fr" => drupal_page.drupal_thematique },
+            participatory_structure: { "fr" => drupal_page.drupal_type },
+            target: { "fr" => "Gestionnaire de la participation : #{drupal_page.drupal_author}" },
+            meta_scope: { "fr" => "" },
+            developer_group: { "fr" => drupal_page.drupal_organization.presence || "Bordeaux métropole" },
             start_date: Time.zone.now,
             end_date: Time.zone.now + 1.minute)
         end
 
-        create_meeting!(@organization, pp)
-        create_page!(@organization, pp)
-        create_proposal!(@organization, pp)
+        meeting = create_meeting!(@organization, pp)
+        page = create_page!(@organization, pp)
+        proposal = create_proposal!(@organization, pp)
 
-        Dir.glob("backups/amelioration-de-la-desserte-en-transport-en-commun-de-la-zone/*.pdf").each do |file|
-          content = File.open(file)
+        drupal_page.pdf_attachments.each do |f|
+          content = URI.open(f[:href])
           file = {
             io: content,
-            filename: File.basename(file),
+            filename: File.basename(f[:href]),
             content_type: "application/pdf",
-            name: transform_file_name(File.basename(file, ".*"))
+            name: f[:title]
           }
 
           attachment =
@@ -100,12 +100,15 @@ module Decidim
             human_filesize: human_filesize,
             limit: limit
           )
-          next
+          sleep 1
         end
 
         drupal_page.set_decidim_participatory_process_id(pp.id)
         url = "https://#{@organization.host}/processes/#{pp.slug}"
         drupal_page.set_participatory_process_url(url)
+        drupal_page.set_decidim_meeting_id(meeting.id)
+        drupal_page.set_decidim_page_id(page.id)
+        drupal_page.set_decidim_proposal_id(proposal.id)
         drupal_page.save_json_resume!
         drupal_page.save_csv_resume!
         sleep 2
@@ -173,7 +176,7 @@ module Decidim
   end
 
   class DrupalPage
-    attr_reader :url, :slug, :md5, :nokogiri_document, :title, :description, :short_description, :drupal_node_id, :thematique, :pdf_attachments, :participatory_process_url, :decidim_participatory_process_id, :errors
+    attr_reader :url, :slug, :md5, :nokogiri_document, :title, :description, :short_description, :drupal_node_id, :thematique, :pdf_attachments, :participatory_process_url, :decidim_participatory_process_id, :errors, :drupal_type, :drupal_author, :drupal_organization, :drupal_thematique
 
     def self.scrape(**args)
       new(**args).scrape
@@ -199,12 +202,15 @@ module Decidim
         participatory_process_url: @participatory_process_url,
         errors_count: @errors.size,
         md5: @md5,
+        decidim_meeting_id: @decidim_meeting_id,
+        decidim_page_id: @decidim_page_id,
+        decidim_proposal_id: @decidim_proposal_id
       }
     end
 
     def attributes
       {
-        html_page: "backups/#{@md5}/#{@md5}.html",
+        html_page: "tmp/drupal_import/#{@md5}/#{@md5}.html",
         title: @title,
         url: @url,
         short_url: @short_url,
@@ -227,6 +233,10 @@ module Decidim
       set_description
       set_short_description
       set_pdf_attachments
+      set_drupal_type
+      set_drupal_thematique
+      set_drupal_organization
+      set_drupal_author
       save!
 
       self
@@ -245,6 +255,18 @@ module Decidim
 
     def set_decidim_participatory_process_id(id)
       @decidim_participatory_process_id = id
+    end
+
+    def set_decidim_meeting_id(id)
+      @decidim_meeting_id = id
+    end
+
+    def set_decidim_page_id(id)
+      @decidim_page_id = id
+    end
+
+    def set_decidim_proposal_id(id)
+      @decidim_proposal_id = id
     end
 
     def set_title
@@ -272,6 +294,33 @@ module Decidim
       end.compact.uniq
     end
 
+    # parse text: "Type :\n          Réglementée /           Concertation simplifiée                      \n              \n\n              \n                \n                  Concertation rendue obligatoire par divers textes nationaux (code de l'urbanisme, de l'environnement, etc.). Présentation, sur ce site web, en mode « simplifié » (dans 1 seule rubrique : « présentation détaillée »). Une réponse globale sera apportée aux avis citoyens (pas de réponse individuelle), dans le bilan de la concertation.\n                \n              \n            \n                  "
+
+
+    def set_drupal_type
+      @drupal_type = @nokogiri_document.css(".attr-list li").map do |li|
+        li if li.text.include?("Type :")
+      end.compact.first&.text&.split("\n").map(&:strip).second.gsub("  ", " ")
+    end
+
+    def set_drupal_thematique
+      @drupal_thematique = @nokogiri_document.css(".attr-list li").map do |li|
+        li if li.text.include?("Thématique :")
+      end.compact.first&.text&.split("\n").map(&:strip).second.gsub("  ", " ")
+    end
+
+    def set_drupal_organization
+      @drupal_organization = @nokogiri_document.css(".attr-list li").map do |li|
+        li if li.text.include?("Porteur de la participation :")
+      end.compact.first&.text&.split("\n").map(&:strip).second.gsub("  ", " ")
+    end
+
+    def set_drupal_author
+      @drupal_author = @nokogiri_document.css(".attr-list li").map do |li|
+        li if li.text.include?("Gestionnaire de la participation :")
+      end.compact.first&.text&.split("\n").map(&:strip).second.gsub("  ", " ")
+    end
+
     def set_drupal_node_id
       @short_url = @nokogiri_document.css("link[rel='shortlink']").attr('href').value
       @drupal_node_id = @short_url&.split("/")&.last || 0
@@ -293,12 +342,12 @@ module Decidim
 
     def save_json_resume!
       return if @title.blank? || @description.blank?
-      Dir.mkdir("backups/#{@md5}") unless File.exists?("backups/#{@md5}")
-      File.write("backups/#{@md5}/#{@md5}.json", JSON.pretty_generate(attributes))
+      Dir.mkdir("tmp/drupal_import/#{@md5}") unless File.exists?("tmp/drupal_import/#{@md5}")
+      File.write("tmp/drupal_import/#{@md5}/#{@md5}.json", JSON.pretty_generate(attributes))
     end
 
     def save_csv_resume!
-      file_path = "backups/resume.csv"
+      file_path = "tmp/drupal_import/resume.csv"
       FileUtils.mkdir_p(File.dirname(file_path))
       file_exists = File.exist?(file_path) && !File.zero?(file_path)
 
@@ -311,8 +360,9 @@ module Decidim
     def save!
       return if @html.blank?
 
-      Dir.mkdir("backups/#{@md5}") unless File.exists?("backups/#{@md5}")
-      File.write("backups/#{@md5}/#{@md5}.html", @html)
+      Dir.mkdir("tmp/drupal_import") unless File.exists?("tmp/drupal_import")
+      Dir.mkdir("tmp/drupal_import/#{@md5}") unless File.exists?("tmp/drupal_import/#{@md5}")
+      File.write("tmp/drupal_import/#{@md5}/#{@md5}.html", @html)
     end
   end
 end
