@@ -20,11 +20,11 @@ module Decidim
 
       urls.each do |url|
         drupal_page = DrupalPage.scrape(url: url[:url], slug: url[:slug])
-        pp = Decidim::ParticipatoryProcess.find_by(slug: drupal_page.slug)
+        pp = Decidim::ParticipatoryProcess.find_by(slug: "projet-#{drupal_page.drupal_node_id}")
         if pp.blank?
           pp = Decidim::ParticipatoryProcess.create!(
             title: { "fr" => drupal_page.title },
-            slug: drupal_page.slug,
+            slug: "projet-#{drupal_page.drupal_node_id}",
             subtitle: { "fr" => "Projet" },
             short_description: { "fr" => drupal_page.short_description },
             description: { "fr" => drupal_page.description },
@@ -112,6 +112,13 @@ module Decidim
         drupal_page.save_json_resume!
         drupal_page.save_csv_resume!
         sleep 2
+
+      rescue StandardError => e
+        puts "Error: #{e.message}"
+        drupal_page.add_error(
+          message: e.message
+        )
+        next
       end
       puts "terminated"
     end
