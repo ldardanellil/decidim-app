@@ -165,6 +165,12 @@ module Decidim
           "organization" => org
         }
       )
+
+      Decidim::Pages::Page.create!(
+        body: { "fr" => "Bilans" },
+        decidim_component: component,
+        published_at: Time.zone.now,
+      )
     end
 
     def create_proposal!(org, pp)
