@@ -104,7 +104,7 @@ module Decidim
             human_filesize: human_filesize,
             limit: limit
           )
-          sleep 1
+          sleep 2
         end
 
         drupal_page.set_decidim_participatory_process_id(pp.id)
