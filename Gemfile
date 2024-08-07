@@ -28,7 +28,7 @@ gem "decidim-extended_socio_demographic_authorization_handler", git: "https://gi
 gem "decidim-extra_user_fields", git: "https://github.com/OpenSourcePolitics/decidim-module-extra_user_fields.git", branch: "temp/twilio-compatibility-0.27"
 gem "decidim-friendly_signup", git: "https://github.com/OpenSourcePolitics/decidim-module-friendly_signup.git"
 gem "decidim-gallery", git: "https://github.com/OpenSourcePolitics/decidim-module-gallery.git", branch: "fix/nokogiri_deps"
-gem "decidim-half_signup", git: "https://github.com/OpenSourcePolitics/decidim-module-half_sign_up.git", branch: "fix/sign-in-link-if-disabled"
+gem "decidim-half_signup", git: "https://github.com/OpenSourcePolitics/decidim-module-half_sign_up.git", branch: "feature/half_signup_and_budgets_booth"
 gem "decidim-homepage_interactive_map", git: "https://github.com/OpenSourcePolitics/decidim-module-homepage_interactive_map.git", branch: DECIDIM_BRANCH
 gem "decidim-ludens", git: "https://github.com/OpenSourcePolitics/decidim-ludens.git", branch: DECIDIM_BRANCH
 gem "decidim-phone_authorization_handler", git: "https://github.com/OpenSourcePolitics/decidim-module_phone_authorization_handler", branch: "release/0.27-stable"
@@ -38,7 +38,7 @@ gem "decidim-term_customizer", git: "https://github.com/OpenSourcePolitics/decid
 
 # Omniauth gems
 gem "omniauth-france_connect", git: "https://github.com/OpenSourcePolitics/omniauth-france_connect", branch: "feat/omniauth_openid_connect--v0.7.1"
-gem "omniauth_openid_connect"
+gem "omniauth_openid_connect", github: "omniauth/omniauth_openid_connect"
 gem "omniauth-publik", git: "https://github.com/OpenSourcePolitics/omniauth-publik"
 
 # Default
