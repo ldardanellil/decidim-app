@@ -6,7 +6,7 @@ if Rails.application.secrets.dig(:omniauth, :openid_connect).present?
   OmniAuth.config.logger = Rails.logger
   Rails.application.config.middleware.use OmniAuth::Builder do
     provider(
-      :openid_connect,
+      :keycloak,
       setup: lambda { |env|
         request = Rack::Request.new(env)
         organization = env["decidim.current_organization"].presence || Decidim::Organization.find_by(host: request.host)

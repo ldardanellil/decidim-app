@@ -22,7 +22,7 @@ gem "decidim-anonymous_proposals", DECIDIM_ANONYMOUS_PROPOSALS_VERSION
 gem "decidim-budget_category_voting", git: "https://github.com/alecslupu-pfa/decidim-budget_category_voting.git", branch: DECIDIM_BRANCH
 gem "decidim-cache_cleaner"
 gem "decidim-category_enhanced", "~> 0.0.1"
-gem "decidim-decidim_awesome", git: "https://github.com/decidim-ice/decidim-module-decidim_awesome", branch: "main"
+gem "decidim-decidim_awesome"
 gem "decidim-extended_socio_demographic_authorization_handler", git: "https://github.com/OpenSourcePolitics/decidim-module-extended_socio_demographic_authorization_handler.git",
                                                                 branch: DECIDIM_BRANCH
 gem "decidim-extra_user_fields", git: "https://github.com/OpenSourcePolitics/decidim-module-extra_user_fields.git", branch: "temp/twilio-compatibility-0.27"
@@ -62,7 +62,7 @@ gem "sys-filesystem"
 gem "wicked_pdf", "2.6.3"
 
 gem "composite_primary_keys"
-gem "mysql2"
+# gem "mysql2"
 
 group :development do
   gem "listen", "~> 3.1"
