@@ -51,7 +51,7 @@ gem "bootsnap", "~> 1.4"
 gem "deepl-rb", require: "deepl"
 gem "deface"
 gem "dotenv-rails", "~> 2.7"
-gem "faker", "~> 2.14"
+gem "faker", "~> 2.19"
 gem "fog-aws"
 gem "foundation_rails_helper", git: "https://github.com/sgruhier/foundation_rails_helper.git"
 gem "letter_opener_web", "~> 1.3"
@@ -68,11 +68,11 @@ group :development do
   gem "rubocop-faker"
   gem "spring", "~> 2.0"
   gem "spring-watcher-listen", "~> 2.0"
-  gem "web-console", "~> 4.1"
+  gem "web-console", "~> 4.2"
 end
 
 group :development, :test do
-  gem "brakeman", "~> 5.1"
+  gem "brakeman", "~> 5.2"
   gem "byebug", "~> 11.0", platform: :mri
   gem "climate_control", "~> 1.2"
   gem "decidim-dev", "~> #{DECIDIM_VERSION}.0"
