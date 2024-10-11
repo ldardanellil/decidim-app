@@ -248,6 +248,13 @@ describe "Participatory Processes", type: :system do
           expect(promoted_items_titles).not_to include(translated(group.title, locale: :en))
         end
 
+        it "lists all the highlighted process groups" do
+          within "#highlighted-processes" do
+            expect(page).to have_content(translated(promoted_group.title, locale: :en))
+            expect(page).to have_selector(".card--full", count: 2)
+          end
+        end
+
         context "and promoted group has defined a CTA content block" do
           let(:cta_settings) do
             {
