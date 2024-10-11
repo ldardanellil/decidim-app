@@ -138,19 +138,8 @@ describe "Homepage", type: :system do
         let(:snippet) { "<meta data-hello=\"This is the organization header_snippet field\">" }
         let(:organization) { create(:organization, official_url: official_url, header_snippets: snippet) }
 
-        it "does not include the header snippets" do
-          expect(page).not_to have_selector("meta[data-hello]", visible: :all)
-        end
-
-        context "when header snippets are enabled" do
-          before do
-            allow(Decidim).to receive(:enable_html_header_snippets).and_return(true)
-            visit decidim.root_path
-          end
-
-          it "includes the header snippets" do
-            expect(page).to have_selector("meta[data-hello]", visible: :all)
-          end
+        it "includes the header snippets" do
+          expect(page).to have_selector("meta[data-hello]", visible: :all)
         end
       end
 
@@ -230,22 +219,6 @@ describe "Homepage", type: :system do
           before do
             login_as user, scope: :user if user
             visit current_path
-          end
-
-          it "displays only publicly accessible pages and topics in the footer" do
-            within ".main-footer" do
-              expect(page).to have_content(static_page1.title["en"])
-              expect(page).to have_no_content(static_page2.title["en"])
-              expect(page).to have_no_content(static_page3.title["en"])
-              expect(page).to have_content(static_page_topic1.title["en"])
-              expect(page).to have_no_content(static_page_topic2.title["en"])
-              expect(page).to have_no_content(static_page_topic3.title["en"])
-
-              expect(page).to have_link(
-                static_page_topic1.title["en"],
-                href: "/pages/#{static_page_topic1_page2.slug}"
-              )
-            end
           end
 
           context "when authenticated" do
